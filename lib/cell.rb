@@ -24,27 +24,19 @@ class Cell
     @ship.hit if @ship
   end
 
-  def render(debug = false)
-    if !fired_upon?
-      if @ship
-        if debug
-          "S"
-        else
-          "."
-        end
+  def render(show_all_ships = false)
+    if fired_upon? && @ship
+      if @ship.sunk?
+        "X"
       else
-        "."
+        "H"
       end
+    elsif fired_upon?
+      "M"
+    elsif @ship && show_all_ships
+      "S"
     else
-      if @ship
-        if @ship.sunk?
-          "X"
-        else
-          "H"
-        end
-      else
-        "M"
-      end
+      "."
     end
   end
 end
