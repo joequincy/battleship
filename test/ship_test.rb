@@ -14,7 +14,6 @@ class ShipTest < Minitest::Test
   end
 
   def test_ship_responds_to_hit
-
     assert_equal 3, @cruiser.health
 
     @cruiser.hit
