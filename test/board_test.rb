@@ -36,6 +36,7 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_accepts_valid_placements
+    skip
     assert @board.valid_placement?(@cruiser, ["A1", "A2", "A3"])
 
     assert @board.valid_placement?(@submarine, ["A1", "A2"])
