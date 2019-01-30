@@ -32,4 +32,19 @@ class CellTest < Minitest::Test
     assert_equal 2, @cell.ship.health
     assert @cell.fired_upon?
   end
+  def test_empty_cell_renders_correctly
+    assert_equal ".", @cell.render
+    @cell.fire_upon
+    assert_equal "M", @cell.render
+  end
+  def test_cell_with_ship_renders_correctly
+    @cell.place_ship(@cruiser)
+    assert_equal ".", @cell.render
+    assert_equal "S", @cell.render(true)
+    @cell.fire_upon
+    assert_equal "H", @cell.render
+    @cruiser.hit
+    @cruiser.hit
+    assert_equal "X", @cell.render
+  end
 end
