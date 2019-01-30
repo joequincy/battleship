@@ -23,5 +23,13 @@ class CellTest < Minitest::Test
     @cell.place_ship(@cruiser)
     refute @cell.empty?
   end
-  
+  def test_cell_is_not_fired_upon
+    refute @cell.fired_upon?
+  end
+  def test_cell_is_fired_upon
+    @cell.place_ship(@cruiser)
+    @cell.fire_upon
+    assert_equal 2, @cell.ship.health
+    assert @cell.fired_upon?
+  end
 end
