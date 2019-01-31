@@ -24,15 +24,15 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_validates_whether_coordinates_are_on_board
-    assert @board.validate_coordinate("A1")
+    assert @board.validate_coordinate?("A1")
 
-    assert @board.validate_coordinate("D4")
+    assert @board.validate_coordinate?("D4")
 
-    refute @board.validate_coordinate("A5")
+    refute @board.validate_coordinate?("A5")
 
-    refute @board.validate_coordinate("E1")
+    refute @board.validate_coordinate?("E1")
 
-    refute @board.validate_coordinate("A22")
+    refute @board.validate_coordinate?("A22")
   end
 
   def test_board_accepts_valid_placements
@@ -53,6 +53,8 @@ class BoardTest < Minitest::Test
 
   def test_board_rejects_non_consecutive_coordinates
     refute @board.valid_placement?(@cruiser, ["A1", "A2", "A4"])
+
+    refute @board.valid_placement?(@cruiser, ["A1", "A4", "A3"])
 
     refute @board.valid_placement?(@submarine, ["A1", "C1"])
 
@@ -87,7 +89,7 @@ class BoardTest < Minitest::Test
                   "D . . . . \n"
     assert_equal expectation, @board.render(true)
 
-    assert_equal expectation.sub("S","."), @board.render
+    assert_equal expectation.gsub("S","."), @board.render
   end
 
   def test_board_can_fire_on_cells
@@ -119,6 +121,10 @@ class BoardTest < Minitest::Test
                   "D X . . . \n"
     assert_equal expectation, @board.render(true)
 
-    assert_equal expectation.sub("S","."), @board.render
+    assert_equal expectation.gsub("S","."), @board.render
+  end
+
+  def test_board_pads_left_side_of_strings
+    assert_equal " test", @board.pad_left("test", 5)
   end
 end
