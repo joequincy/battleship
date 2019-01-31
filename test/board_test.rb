@@ -24,19 +24,18 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_validates_whether_coordinates_are_on_board
-    assert @board.validate_coordinate("A1")
+    assert @board.validate_coordinate?("A1")
 
-    assert @board.validate_coordinate("D4")
+    assert @board.validate_coordinate?("D4")
 
-    refute @board.validate_coordinate("A5")
+    refute @board.validate_coordinate?("A5")
 
-    refute @board.validate_coordinate("E1")
+    refute @board.validate_coordinate?("E1")
 
-    refute @board.validate_coordinate("A22")
+    refute @board.validate_coordinate?("A22")
   end
 
   def test_board_accepts_valid_placements
-    skip
     assert @board.valid_placement?(@cruiser, ["A1", "A2", "A3"])
 
     assert @board.valid_placement?(@submarine, ["A1", "A2"])
@@ -54,6 +53,8 @@ class BoardTest < Minitest::Test
 
   def test_board_rejects_non_consecutive_coordinates
     refute @board.valid_placement?(@cruiser, ["A1", "A2", "A4"])
+
+    refute @board.valid_placement?(@cruiser, ["A1", "A4", "A3"])
 
     refute @board.valid_placement?(@submarine, ["A1", "C1"])
 
@@ -88,10 +89,11 @@ class BoardTest < Minitest::Test
                   "D . . . . \n"
     assert_equal expectation, @board.render(true)
 
-    assert_equal expectation.sub("S","."), @board.render
+    assert_equal expectation.gsub("S","."), @board.render
   end
 
   def test_board_can_fire_on_cells
+    skip
     @board.place(@submarine, ["A1", "A2"])
     @board.fire_upon("A1")
     assert_equal 1, @submarine.health
@@ -101,12 +103,14 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_will_not_fire_on_cells_that_were_already_fired_upon
+    skip
     assert @board.fire_upon("A1")
 
     refute @board.fire_upon("A1")
   end
 
   def test_board_renders_midgame_output
+    skip
     @board.place(@cruiser, ["A1", "A2", "A3"])
     @board.place(@submarine, ["C1", "D1"])
     @board.fire_upon("A1")
@@ -120,6 +124,6 @@ class BoardTest < Minitest::Test
                   "D X . . . \n"
     assert_equal expectation, @board.render(true)
 
-    assert_equal expectation.sub("S","."), @board.render
+    assert_equal expectation.gsub("S","."), @board.render
   end
 end
