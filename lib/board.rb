@@ -1,3 +1,5 @@
+require './lib/cell'
+
 class Board
   attr_reader :cells
   def initialize
@@ -33,7 +35,8 @@ class Board
 
       coordinates.each_index do |index|
         # binding.pry
-        if validate_coordinate?(coordinates[index]) && @cells[coordinates[index]].empty?
+        if validate_coordinate?(coordinates[index]) &&
+           @cells[coordinates[index]].empty?
           # binding.pry
           # Current coordinate is on the board, and doesn't
           # yet have a ship to collide with. Hooray!
@@ -64,6 +67,9 @@ class Board
               return false
             end
             delta_vertical += step_delta_vertical
+            if !(step_delta_horizontal == 0 || step_delta_vertical == 0)
+              return false
+            end
           end
         else
           # The current cell has a ship in it.
@@ -71,7 +77,7 @@ class Board
         end
       end
 
-      if (delta_horizontal == 0 || delta_vertical == 0) && (delta_horizontal + delta_vertical == ship.length - 1)
+      if delta_horizontal + delta_vertical == ship.length - 1
         # (delta_horizontal + delta_vertical).abs = ship.length - 1
         # would allow this to function even if ships
         # are placed in reverse direction
@@ -91,8 +97,9 @@ class Board
       coordinates.each do |coordinate|
         @cells[coordinate].place_ship(ship)
       end
+      true
     else
-      # warn player that this position was invalid
+      false
     end
   end
 
@@ -145,21 +152,16 @@ class Board
     output += " " * (largest_row_address.length + 1)
     columns.each do |column|
       output += pad_left(column.to_s, largest_column_address.to_s.length) + " "
-        # output += " " * (largest_column_address.digits.length - column.digits.length)
-        # output += column + " "
     end
     output += "\n"
 
 
     rows.each do |row|
-      output += " " * (largest_row_address.length - row.length)
-      output += row + " "
+      output += pad_left(row, largest_row_address.length) + " "
       columns.each do |column|
         coordinate = row + column.to_s
         cell_render_output = @cells[coordinate].render(show_all_ships)
         output += pad_left(cell_render_output, largest_column_address.to_s.length) + " "
-        # output += " " * (largest_column_address.digits.length - column.digits.length)
-        # output += @cells[coordinate].render(show_all_ships) + " "
       end
       output += "\n"
     end
