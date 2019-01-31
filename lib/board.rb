@@ -30,8 +30,12 @@ class Board
       # Right number of cells for this ship
       delta_horizontal = 0
       delta_vertical = 0
+
       coordinates.each_index do |index|
-        if @cells[coordinates[index]].empty?
+        if validate_coordinate?(coordinates[index]) && @cells[coordinates[index]].empty?
+          # Current coordinate is on the board, and doesn't
+          # yet have a ship to collide with. Hooray!
+
           # For every element in the array of coordinates
           # determine the delta (change in value) from the
           # previous element (skip the first array element).
@@ -43,32 +47,33 @@ class Board
             current_column = coordinates[index].match(/[0-9]+$/)[0].to_i
             previous_column = coordinates[index - 1].match(/[0-9]+$/)[0].to_i
             temp_delta_horizontal = current_column - previous_column
-            if temp_delta_horizontal <= 1 && temp_delta_horizontal >= -1
-              delta_horizontal += temp_delta_horizontal
-            else
+            if temp_delta_horizontal >= 1 && temp_delta_horizontal <= -1
+              # We've moved too far in a single step.
               return false
             end
+            delta_horizontal += temp_delta_horizontal
 
             current_row = coordinates[index].match(/^[A-Z]+/)[0].ord
             previous_row = coordinates[index - 1].match(/^[A-Z]+/)[0].ord
             temp_delta_vertical = current_row - previous_row
             if temp_delta_vertical <= 1 && temp_delta_vertical >= -1
-              delta_vertical += temp_delta_vertical
-            else
               return false
             end
+            delta_vertical += temp_delta_vertical
           end
         else
           # The current cell has a ship in it.
-          return false
+          false
         end
       end
+
       if (delta_horizontal == 0 || delta_vertical == 0) && (delta_horizontal + delta_vertical == ship.length - 1)
-        # (delta_horizontal + delta_vertical).abs = ship.lenth - 1
+        # (delta_horizontal + delta_vertical).abs = ship.length - 1
         # would allow this to function even if ships
         # are placed in reverse direction
         true
       else
+
         false
       end
     else
@@ -93,6 +98,9 @@ class Board
     rows = []
 
     @cells.keys.each do |coordinate|
+      # Cell coordinates consist of an alphabetic row,
+      # followed by a numeric column, so use regex to
+      # get arrays of each.
       current_column = coordinate.match(/[0-9]+$/)[0].to_i
       columns << current_column if !columns.include?(current_column)
       current_row = coordinate.match(/^[A-Z]+/)[0]
@@ -101,23 +109,35 @@ class Board
 
     columns.sort!
     rows.sort! do |a,b|
+      # If we have more than 26 rows, we're going to start
+      # having columns named "AA", "AB", etc. Since the
+      # default sort for an array of Strings is alphabetic,
+      # that would sort to "A", "AA", "AB", "B", so we need
+      # to make sure that when two strings are of differing
+      # lengths, we should demote the longer string before
+      # even thinking about its alphabetic content.
       if a.length > b.length
         1
       elsif a.length < b.length
         -1
       else
+        # Strings are of equal length, so use default sorting.
         a <=> b
       end
     end
 
-    left_side_width = rows.sort{|a,b| b.length <=> a.length}.first.length + 1
-    output += "#{" " * left_side_width}#{columns.join(" ")} \n"
+    longest_row_name = rows.sort_by do |row|
+      row.length
+    end.last
+    output += " " * (longest_row_name.length + 1)
+    output += "#{columns.join(" ")} \n"
 
     rows.each do |row|
-      output += " " * (left_side_width - row.length - 1)
+      output += " " * (longest_row_name.length - row.length)
       output += row + " "
       columns.each do |column|
-        output += @cells[row + column.to_s].render(show_all_ships) + " "
+        coordinate = row + column.to_s
+        output += @cells[coordinate].render(show_all_ships) + " "
       end
       output += "\n"
     end
