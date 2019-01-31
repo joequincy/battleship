@@ -1,5 +1,3 @@
-require 'pry'
-
 class Ship
   attr_reader :name,
               :length,
@@ -18,5 +16,5 @@ class Ship
   def hit
     @health -= 1
   end
-  
+
 end

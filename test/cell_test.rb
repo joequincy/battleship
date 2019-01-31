@@ -12,7 +12,7 @@ class CellTest < Minitest::Test
 
   def test_cell_default_attributes
     assert_equal "B4", @cell.coordinate
-    
+
     assert_nil @cell.ship
   end
 
@@ -35,11 +35,14 @@ class CellTest < Minitest::Test
   end
 
   def test_cell_is_fired_upon
+    @cell.fire_upon
+    assert @cell.fired_upon?
+  end
+
+  def test_cell_affects_ship_when_fired_upon
     @cell.place_ship(@cruiser)
     @cell.fire_upon
     assert_equal 2, @cell.ship.health
-
-    assert @cell.fired_upon?
   end
 
   def test_empty_cell_renders_correctly

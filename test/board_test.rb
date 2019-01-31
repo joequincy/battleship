@@ -61,6 +61,8 @@ class BoardTest < Minitest::Test
     refute @board.valid_placement?(@cruiser, ["A3", "A2", "A1"])
 
     refute @board.valid_placement?(@submarine, ["C1", "B1"])
+
+    refute @board.valid_placement?(@cruiser, ["A1", "B2", "C1"])
   end
 
   def test_board_rejects_diagonal_coordinates
@@ -72,6 +74,7 @@ class BoardTest < Minitest::Test
   def test_board_can_place_ship
     @board.place(@cruiser, ["A1", "A2", "A3"])
     assert_equal @cruiser, @cell_1.ship
+    
     assert_equal @cell_1.ship, @cell_2.ship
   end
 
