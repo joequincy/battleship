@@ -93,7 +93,6 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_can_fire_on_cells
-    skip
     @board.place(@submarine, ["A1", "A2"])
     @board.fire_upon("A1")
     assert_equal 1, @submarine.health
@@ -103,14 +102,12 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_will_not_fire_on_cells_that_were_already_fired_upon
-    skip
     assert @board.fire_upon("A1")
 
     refute @board.fire_upon("A1")
   end
 
   def test_board_renders_midgame_output
-    skip
     @board.place(@cruiser, ["A1", "A2", "A3"])
     @board.place(@submarine, ["C1", "D1"])
     @board.fire_upon("A1")
@@ -125,5 +122,9 @@ class BoardTest < Minitest::Test
     assert_equal expectation, @board.render(true)
 
     assert_equal expectation.gsub("S","."), @board.render
+  end
+
+  def test_board_pads_left_side_of_strings
+    assert_equal " test", @board.pad_left("test", 5)
   end
 end

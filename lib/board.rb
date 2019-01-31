@@ -32,7 +32,9 @@ class Board
       delta_vertical = 0
 
       coordinates.each_index do |index|
+        # binding.pry
         if validate_coordinate?(coordinates[index]) && @cells[coordinates[index]].empty?
+          # binding.pry
           # Current coordinate is on the board, and doesn't
           # yet have a ship to collide with. Hooray!
 
@@ -46,24 +48,26 @@ class Board
           if index > 0
             current_column = coordinates[index].match(/[0-9]+$/)[0].to_i
             previous_column = coordinates[index - 1].match(/[0-9]+$/)[0].to_i
-            temp_delta_horizontal = current_column - previous_column
-            if temp_delta_horizontal >= 1 && temp_delta_horizontal <= -1
+            step_delta_horizontal = current_column - previous_column
+            # binding.pry
+            if step_delta_horizontal > 1 || step_delta_horizontal < -1
               # We've moved too far in a single step.
               return false
             end
-            delta_horizontal += temp_delta_horizontal
+            delta_horizontal += step_delta_horizontal
 
             current_row = coordinates[index].match(/^[A-Z]+/)[0].ord
             previous_row = coordinates[index - 1].match(/^[A-Z]+/)[0].ord
-            temp_delta_vertical = current_row - previous_row
-            if temp_delta_vertical <= 1 && temp_delta_vertical >= -1
+            step_delta_vertical = current_row - previous_row
+            # binding.pry
+            if step_delta_vertical > 1 || step_delta_vertical < -1
               return false
             end
-            delta_vertical += temp_delta_vertical
+            delta_vertical += step_delta_vertical
           end
         else
           # The current cell has a ship in it.
-          false
+          return false
         end
       end
 
@@ -92,6 +96,15 @@ class Board
     end
   end
 
+  def fire_upon(coordinate)
+    if validate_coordinate?(coordinate) && !@cells[coordinate].fired_upon?
+      @cells[coordinate].fire_upon
+      true
+    else
+      false
+    end
+  end
+
   def render(show_all_ships = false)
     output = ""
     columns = []
@@ -112,10 +125,10 @@ class Board
       # If we have more than 26 rows, we're going to start
       # having columns named "AA", "AB", etc. Since the
       # default sort for an array of Strings is alphabetic,
-      # that would sort to "A", "AA", "AB", "B", so we need
-      # to make sure that when two strings are of differing
-      # lengths, we should demote the longer string before
-      # even thinking about its alphabetic content.
+      # that would sort to "A", "AA", "AB", "B", etc. so we
+      # need to make sure that when two strings are of
+      # differing lengths, we should demote the longer string
+      # before even thinking about its alphabetic content.
       if a.length > b.length
         1
       elsif a.length < b.length
@@ -126,21 +139,35 @@ class Board
       end
     end
 
-    longest_row_name = rows.sort_by do |row|
-      row.length
-    end.last
-    output += " " * (longest_row_name.length + 1)
-    output += "#{columns.join(" ")} \n"
+    largest_row_address = rows.last
+    largest_column_address = columns.last
+
+    output += " " * (largest_row_address.length + 1)
+    columns.each do |column|
+      output += pad_left(column.to_s, largest_column_address.to_s.length) + " "
+        # output += " " * (largest_column_address.digits.length - column.digits.length)
+        # output += column + " "
+    end
+    output += "\n"
+
 
     rows.each do |row|
-      output += " " * (longest_row_name.length - row.length)
+      output += " " * (largest_row_address.length - row.length)
       output += row + " "
       columns.each do |column|
         coordinate = row + column.to_s
-        output += @cells[coordinate].render(show_all_ships) + " "
+        cell_render_output = @cells[coordinate].render(show_all_ships)
+        output += pad_left(cell_render_output, largest_column_address.to_s.length) + " "
+        # output += " " * (largest_column_address.digits.length - column.digits.length)
+        # output += @cells[coordinate].render(show_all_ships) + " "
       end
       output += "\n"
     end
     return output
+  end
+
+  def pad_left(string, total_length_needed)
+    return_string = " " * (total_length_needed - string.length)
+    return_string += string
   end
 end
