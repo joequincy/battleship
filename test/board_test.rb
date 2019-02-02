@@ -74,7 +74,7 @@ class BoardTest < Minitest::Test
   def test_board_can_place_ship
     @board.place(@cruiser, ["A1", "A2", "A3"])
     assert_equal @cruiser, @cell_1.ship
-    
+
     assert_equal @cell_1.ship, @cell_2.ship
   end
 
@@ -129,5 +129,15 @@ class BoardTest < Minitest::Test
 
   def test_board_pads_left_side_of_strings
     assert_equal " test", @board.pad_left("test", 5)
+  end
+
+  def test_variable_board_sizes
+    @wide_board = Board.new(5, 3)
+    @tall_board = Board.new(3, 5)
+    @huge_board = Board.new(30, 30)
+
+    assert_equal 15, @wide_board.cells.keys.length
+    assert_equal 15, @tall_board.cells.keys.length
+    assert_equal 900, @huge_board.cells.keys.length
   end
 end

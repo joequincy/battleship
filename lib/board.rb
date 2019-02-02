@@ -1,26 +1,33 @@
 require './lib/cell'
 
 class Board
-  attr_reader :cells
-  def initialize
-    @cells = {
-      "A1" => Cell.new("A1"),
-      "A2" => Cell.new("A2"),
-      "A3" => Cell.new("A3"),
-      "A4" => Cell.new("A4"),
-      "B1" => Cell.new("B1"),
-      "B2" => Cell.new("B2"),
-      "B3" => Cell.new("B3"),
-      "B4" => Cell.new("B4"),
-      "C1" => Cell.new("C1"),
-      "C2" => Cell.new("C2"),
-      "C3" => Cell.new("C3"),
-      "C4" => Cell.new("C4"),
-      "D1" => Cell.new("D1"),
-      "D2" => Cell.new("D2"),
-      "D3" => Cell.new("D3"),
-      "D4" => Cell.new("D4")
-    }
+  attr_reader :cells,
+              :width,
+              :height
+  def initialize(width = 4, height = 4)
+    @width = width
+    @height = height
+    @cells = generate_board_cells
+  end
+
+  def generate_board_cells
+    cells = Hash.new do |hash,key|
+      hash[key] = Cell.new(key)
+    end
+    (1..@height).each do |row|
+      (1..@width).each do |column|
+        cells[num_to_letters(row) + column.to_s]
+      end
+    end
+    return cells
+  end
+
+  def num_to_letters(int)
+    if int > 26
+      num_to_letters(int % 26) + num_to_letters(int / 26)
+    else
+      (int + 64).chr
+    end
   end
 
   def validate_coordinate?(coordinate)
