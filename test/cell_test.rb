@@ -1,7 +1,6 @@
 require './test/test_helper'
 
 class CellTest < Minitest::Test
-  @@colorize = (ARGV.length > 0 && ARGV[0] == "--color") ? true : false
   def setup
     @cell = Cell.new("B4")
     @cruiser = Ship.new("Cruiser", 3)
@@ -47,7 +46,6 @@ class CellTest < Minitest::Test
   end
 
   def test_empty_cell_renders_correctly
-    skip if @@colorize
     assert_equal ".", @cell.render
 
     @cell.fire_upon
@@ -55,7 +53,6 @@ class CellTest < Minitest::Test
   end
 
   def test_cell_with_ship_renders_correctly
-    skip if @@colorize
     @cell.place_ship(@cruiser)
     assert_equal ".", @cell.render
 
@@ -67,5 +64,28 @@ class CellTest < Minitest::Test
     @cruiser.hit
     @cruiser.hit
     assert_equal "X", @cell.render
+  end
+
+  def test_colorized_cell_renders_correctly
+    empty_cell = Cell.new("B4")
+    empty_cell.colorize = true
+    ship_cell = Cell.new("B4")
+    ship_cell.colorize = true
+    assert_equal "\e[36m\u2592\e[0m", empty_cell.render
+
+    empty_cell.fire_upon
+    assert_equal "\e[93mM\e[0m", empty_cell.render
+
+    ship_cell.place_ship(@cruiser)
+    assert_equal "\e[36m\u2592\e[0m", ship_cell.render
+
+    assert_equal "S", ship_cell.render(true)
+
+    ship_cell.fire_upon
+    assert_equal "\e[31mH\e[0m", ship_cell.render
+
+    @cruiser.hit
+    @cruiser.hit
+    assert_equal "\e[90mX\e[0m", ship_cell.render
   end
 end

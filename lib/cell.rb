@@ -5,11 +5,17 @@ class Cell
 
   @@colorize = (ARGV.length > 0 && ARGV[0] == "--color") ? true : false
   ## if we start the runner with a --color switch, render in color.
-  
+
   def initialize(coordinate)
     @coordinate = coordinate
     @ship = nil
     @fired_upon = false
+  end
+
+  def colorize=(bool)
+    if bool == true || bool == false
+      @@colorize = bool
+    end
   end
 
   def empty?
