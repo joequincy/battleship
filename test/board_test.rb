@@ -36,55 +36,55 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_accepts_valid_placements
-    assert @board.valid_placement?(@cruiser, ["A1", "A2", "A3"])
+    assert @board.valid_placement?(@cruiser, ["A1", "A2", "A3"])[:pass]
 
-    assert @board.valid_placement?(@submarine, ["A1", "A2"])
+    assert @board.valid_placement?(@submarine, ["A1", "A2"])[:pass]
 
-    assert @board.valid_placement?(@cruiser, ["A1", "B1", "C1"])
+    assert @board.valid_placement?(@cruiser, ["A1", "B1", "C1"])[:pass]
 
-    assert @board.valid_placement?(@submarine, ["D3", "D4"])
+    assert @board.valid_placement?(@submarine, ["D3", "D4"])[:pass]
   end
 
   def test_board_rejects_ship_placement_of_invalid_length
-    refute @board.valid_placement?(@cruiser, ["A1", "A2"])
+    refute @board.valid_placement?(@cruiser, ["A1", "A2"])[:pass]
 
-    refute @board.valid_placement?(@submarine, ["A1", "A2", "A3"])
+    refute @board.valid_placement?(@submarine, ["A1", "A2", "A3"])[:pass]
   end
 
   def test_board_rejects_non_consecutive_coordinates
-    refute @board.valid_placement?(@cruiser, ["A1", "A2", "A4"])
+    refute @board.valid_placement?(@cruiser, ["A1", "A2", "A4"])[:pass]
 
-    refute @board.valid_placement?(@cruiser, ["A1", "A4", "A3"])
+    refute @board.valid_placement?(@cruiser, ["A1", "A4", "A3"])[:pass]
 
-    refute @board.valid_placement?(@submarine, ["A1", "C1"])
+    refute @board.valid_placement?(@submarine, ["A1", "C1"])[:pass]
 
-    refute @board.valid_placement?(@cruiser, ["A3", "A2", "A1"])
+    refute @board.valid_placement?(@cruiser, ["A3", "A2", "A1"])[:pass]
 
-    refute @board.valid_placement?(@submarine, ["C1", "B1"])
+    refute @board.valid_placement?(@submarine, ["C1", "B1"])[:pass]
 
-    refute @board.valid_placement?(@cruiser, ["A1", "B2", "C1"])
+    refute @board.valid_placement?(@cruiser, ["A1", "B2", "C1"])[:pass]
   end
 
   def test_board_rejects_diagonal_coordinates
-    refute @board.valid_placement?(@cruiser, ["A1", "B2", "C3"])
+    refute @board.valid_placement?(@cruiser, ["A1", "B2", "C3"])[:pass]
 
-    refute @board.valid_placement?(@submarine, ["C2", "D3"])
+    refute @board.valid_placement?(@submarine, ["C2", "D3"])[:pass]
   end
 
   def test_board_can_place_ship
-    @board.place(@cruiser, ["A1", "A2", "A3"])
+    @board.place(@cruiser, ["A1", "A2", "A3"])[:pass]
     assert_equal @cruiser, @cell_1.ship
 
     assert_equal @cell_1.ship, @cell_2.ship
   end
 
   def test_board_rejects_overlapping_ships
-    @board.place(@cruiser, ["A1", "A2", "A3"])
-    refute @board.valid_placement?(@submarine, ["A1", "B1"])
+    @board.place(@cruiser, ["A1", "A2", "A3"])[:pass]
+    refute @board.valid_placement?(@submarine, ["A1", "B1"])[:pass]
   end
 
   def test_board_render_output
-    @board.place(@cruiser, ["A1", "A2", "A3"])
+    @board.place(@cruiser, ["A1", "A2", "A3"])[:pass]
     expectation = "  1 2 3 4 \n" +
                   "A S S S . \n" +
                   "B . . . . \n" +
@@ -96,7 +96,7 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_can_fire_on_cells
-    @board.place(@submarine, ["A1", "A2"])
+    @board.place(@submarine, ["A1", "A2"])[:pass]
     @board.fire_upon("A1")
     assert_equal 1, @submarine.health
 
@@ -105,14 +105,14 @@ class BoardTest < Minitest::Test
   end
 
   def test_board_will_not_fire_on_cells_that_were_already_fired_upon
-    assert @board.fire_upon("A1")
+    assert_instance_of Hash, @board.fire_upon("A1")
 
-    refute @board.fire_upon("A1")
+    assert_instance_of String, @board.fire_upon("A1")
   end
 
   def test_board_renders_midgame_output
-    @board.place(@cruiser, ["A1", "A2", "A3"])
-    @board.place(@submarine, ["C1", "D1"])
+    @board.place(@cruiser, ["A1", "A2", "A3"])[:pass]
+    @board.place(@submarine, ["C1", "D1"])[:pass]
     @board.fire_upon("A1")
     @board.fire_upon("B4")
     @board.fire_upon("C1")
