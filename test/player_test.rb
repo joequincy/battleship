@@ -30,7 +30,7 @@ class PlayerTest < Minitest::Test
     ]
     actual_5 = @player.create_ship_set(5)
     assert_equal expectation_5.length, actual_5.length
-    assert actual_5.any?{|ship| ship.name == "Cruiser"}
+    assert actual_5.any?{|ship| ship.name == "Submarine"}
     refute actual_5.any?{|ship| ship.name == "Aircraft Carrier"}
 
     expectation_17 = [
@@ -42,14 +42,14 @@ class PlayerTest < Minitest::Test
     ]
     actual_17 = @player.create_ship_set(17)
     assert_equal expectation_17.length, actual_17.length
-    assert_equal 1, actual_17.count?{|ship| ship.name == "Cruiser"}
+    assert_equal 1, actual_17.count{|ship| ship.name == "Cruiser"}
     assert_equal 1, actual_17.count{|ship| ship.name == "Aircraft Carrier"}
   end
 
   def test_player_can_generate_ship_presets
     small_ships = @player.generate_ships
-    assert_equal 2, ships.length
-    assert_equal "Cruiser", ships.first.name
+    assert_equal 2, small_ships.length
+    assert_equal "Cruiser", small_ships.first.name
 
     player = Player.new(Board.new(10, 10), Board.new(10, 10))
     large_ships = player.generate_ships
