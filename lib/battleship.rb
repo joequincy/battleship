@@ -39,8 +39,8 @@ class Battleship
     ships = @user.generate_ships
     computer_ships = ships.map{|ship| ship.clone}
 
-    @user.place_ships(ships)
     @computer.place_ships(computer_ships)
+    @user.place_ships(ships)
   end
 
   def play_game
