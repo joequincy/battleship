@@ -29,11 +29,10 @@ class Player
     # take_shot does not take any arguments
 
     # it walks the user through taking a shot
+    # then displays the result
 
-    # it returns a Hash containing
-    #    msg: "A string indicating the result of the shot."
-    #   sunk: true/false -- whether the shot sunk a ship
-    #   ship: nil, or String "Ship_Name" if the shot sunk a ship
+    # it returns `true` if the shot won the game
+    # it returns `false` if the game must continue
   end
 
   def generate_ships

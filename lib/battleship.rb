@@ -5,119 +5,70 @@ require 'pry'
 
 class Battleship
   def initialize
-    @boards = []
-    @computer = Player.new(Board.new, Board.new)
+    @computer = Computer.new(Board.new, Board.new)
     @user = Player.new(Board.new, Board.new)
     @game_over = false
+    @current_player = @computer
   end
 
   def run
-
+    loop do
+      display_main_menu
+      setup
+      play_game
+      end_game
+    end
   end
 
   def display_main_menu
-    # greeting, ask user if they want to play
     puts "Welcome to BATTLESHIP"
     puts "Enter p to play. Enter q to quit."
     user_response = gets.chomp.downcase
+
     while user_response != "p"
       if user_response == "q"
         abort
       else
-        puts "Invalid key."
+        puts "Invalid response."
       end
       user_response = gets.chomp.downcase
     end
   end
 
-    # until @game_over do
-      # render computer board
-      # render(true) user board
-
-      # ask user to take shot
-      # puts result of user's shot
-      # check if all computer ships are sunk
-      # if yes, change @game_over to "user"
-      # break
-
-      # ask computer to take shot
-      # puts result of computer's shot
-      # check if all user's ships are sunk
-      # if yes, change @game_over to "computer"
-  #   end
-  #
-  #   end_game
-  # end
-
   def setup
-    # set up two boards
-    players = [@user, @computer]
-    # @boards << computer board
-    # @boards << user board
-    # ask @computer to place ships
-    # ask @user to place ships
+    ships = @user.generate_ships
+    computer_ships = ships.map{|ship| ship.clone}
 
-    players.each do |player|
-      player.ships.each do |ship|
-        coordinates = []
-        puts "Place #{ship.name} (#{ship.length} cells)"
-        puts "Enter first coordinate"
-        first_coordinate = gets.chomp.capitalize
-        coordinates << first_coordinate
-        (ship.length - 1).times do
-          puts 'Next Coordinate?'
-          next_coordinate = gets.chomp.capitalize
-          coordinates  << next_coordinate
-        end
-        validation_checks(player.own_board, ship, coordinates)
-      end
-    end
+    @user.place_ships(ships)
+    @computer.place_ships(computer_ships)
   end
-
-  def validation_checks(board, ship, coordinates)
-    valid_coordinates = coordinates.map do |coordinate|
-      board.validate_coordinate?(coordinate)
-    end
-
-      if valid_coordinates.all? == false
-        puts "#{"*" * 10} NOT VALID COORDINATES #{"*" * 10}"
-        puts "\n"
-        setup
-      else
-
-        valid_placement = board.valid_placement?(ship, coordinates)
-        if valid_placement == true
-          board.place(ship, coordinates)
-          puts board.render(true)
-        else
-          puts "#{"*" * 10} NOT VALID PLACEMENT #{"*" * 10}"
-          puts "\n"
-          setup
-        end
-      end
-    end
 
   def play_game
-    # set first player
     until @game_over
-      # take turn with current_player
-      # toggle player
+      toggle_player
+      @game_over = @current_player.take_shot
     end
   end
 
-  def take_turn(player)
-    # player takes a turn
-    # check for winner
-    # display results of shot
-  end
-
-  def toggle_player(player)
-    # return other player
+  def toggle_player
+    if @current_player == @user
+      @current_player = @computer
+    else
+      @current_player = @user
+    end
   end
 
   def end_game
-    # puts game results
-    # reset instance variables
-    run
+    if @current_player == @user
+      puts "You won!"
+    else
+      puts "I won!"
+    end
+
+    # Reset Instance Variables
+    @computer = Computer.new(Board.new, Board.new)
+    @user = Player.new(Board.new, Board.new)
+    @game_over = false
+    @current_player = @computer
   end
 end
