@@ -16,18 +16,10 @@ class Board
     end
     (1..@height).each do |row|
       (1..@width).each do |column|
-        cells[num_to_letters(row) + column.to_s]
+        cells[row.to_row_letters + column.to_s]
       end
     end
     return cells
-  end
-
-  def num_to_letters(int)
-    if int > 26
-      num_to_letters(int % 26) + num_to_letters(int / 26)
-    else
-      (int + 64).chr
-    end
   end
 
   def validate_coordinate?(coordinate)
@@ -56,66 +48,104 @@ class Board
           # (not both), and the total delta will be 1 less
           # than the length of the ship.
           if index > 0
-            current_column = coordinates[index].match(/[0-9]+$/)[0].to_i
-            previous_column = coordinates[index - 1].match(/[0-9]+$/)[0].to_i
+            current_address = coordinates[index].split_coordinate
+            previous_address = coordinates[index - 1].split_coordinate
+            current_column = current_address[:column]
+            previous_column = previous_address[:column]
             step_delta_horizontal = current_column - previous_column
             # binding.pry
             if step_delta_horizontal > 1 || step_delta_horizontal < -1
               # We've moved too far in a single step.
-              return false
+              return {pass: false,
+                       msg: "#{coordinates[index]} is too far from #{coordinates[index - 1]}"}
             end
             delta_horizontal += step_delta_horizontal
 
-            current_row = coordinates[index].match(/^[A-Z]+/)[0].ord
-            previous_row = coordinates[index - 1].match(/^[A-Z]+/)[0].ord
+            current_row = current_address[:row].to_row_num
+            previous_row = previous_address[:row].to_row_num
             step_delta_vertical = current_row - previous_row
             # binding.pry
             if step_delta_vertical > 1 || step_delta_vertical < -1
-              return false
+              return {pass: false,
+                       msg: "#{coordinates[index]} is too far from #{coordinates[index - 1]}"}
             end
             delta_vertical += step_delta_vertical
             if !(step_delta_horizontal == 0 || step_delta_vertical == 0)
-              return false
+              return {pass: false,
+                       msg: "#{coordinates[index]} is diagonal from #{coordinates[index - 1]}"}
             end
           end
         else
-          # The current cell has a ship in it.
-          return false
+          # The current cell has a ship in it or isn't on the board.
+          output = {pass: false}
+          if validate_coordinate?(coordinates[index])
+            output[:msg] = "There's already a ship in #{coordinates[index]}"
+          else
+            output[:msg] = "#{coordinates[index]} isn't on the board"
+          end
+          return output
         end
       end
 
-      if delta_horizontal + delta_vertical == ship.length - 1
+      if (delta_horizontal == 0 || delta_vertical == 0) &&
+         delta_horizontal + delta_vertical == ship.length - 1
         # (delta_horizontal + delta_vertical).abs = ship.length - 1
         # would allow this to function even if ships
         # are placed in reverse direction
-        true
+        return {pass: true}
       else
-
-        false
+        return {pass: false,
+                 msg: "Those coordinates aren't shaped like #{ship.name}"}
       end
     else
       # Wrong number of cells for ship
-      false
+      return {pass: false,
+               msg: "The #{ship.name} is #{ship.length} cells long, but you gave #{coordinates.length} cells"}
     end
   end
 
   def place(ship, coordinates)
-    if valid_placement?(ship, coordinates)
+    test = valid_placement?(ship, coordinates)
+    if test[:pass]
       coordinates.each do |coordinate|
         @cells[coordinate].place_ship(ship)
       end
-      true
-    else
-      false
     end
+    return test
   end
 
   def fire_upon(coordinate)
-    if validate_coordinate?(coordinate) && !@cells[coordinate].fired_upon?
-      @cells[coordinate].fire_upon
-      true
+    # puts "Board.fire_upon(coordinate) received coordinate of class #{coordinate.class}."
+    cell = @cells[coordinate]
+    is_valid = validate_coordinate?(coordinate)
+    fired_upon = cell.fired_upon?
+    if is_valid && !fired_upon
+      cell.fire_upon
+      if cell.empty?
+        return {
+           msg: "miss",
+          sunk: false,
+          ship: nil
+        }
+      else
+        if cell.ship.sunk?
+          return {
+             msg: "hit",
+            sunk: true,
+            ship: cell.ship.name
+          }
+        else
+          return {
+             msg: "hit",
+            sunk: false,
+            ship: nil
+          }
+        end
+      end
+    elsif fired_upon
+      "That coordinate has already been fired upon."
     else
-      false
+      "That coordinate is not on the board."
     end
   end
 
@@ -124,14 +154,15 @@ class Board
     columns = []
     rows = []
 
+    # p @cells
+    # p @cells.keys
+
     @cells.keys.each do |coordinate|
-      # Cell coordinates consist of an alphabetic row,
-      # followed by a numeric column, so use regex to
-      # get arrays of each.
-      current_column = coordinate.match(/[0-9]+$/)[0].to_i
-      columns << current_column if !columns.include?(current_column)
-      current_row = coordinate.match(/^[A-Z]+/)[0]
-      rows << current_row if !rows.include?(current_row)
+      # puts "Coordinate: "
+      # p coordinate
+      address = coordinate.split_coordinate
+      columns << address[:column] if !columns.include?(address[:column])
+      rows << address[:row] if !rows.include?(address[:row])
     end
 
     columns.sort!
@@ -168,7 +199,8 @@ class Board
       columns.each do |column|
         coordinate = row + column.to_s
         cell_render_output = @cells[coordinate].render(show_all_ships)
-        output += pad_left(cell_render_output, largest_column_address.to_s.length) + " "
+        target_length = cell_render_output.length + largest_column_address.to_s.length - 1
+        output += pad_left(cell_render_output, target_length) + " "
       end
       output += "\n"
     end
