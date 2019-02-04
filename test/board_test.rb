@@ -74,7 +74,7 @@ class BoardTest < Minitest::Test
   def test_board_can_place_ship
     @board.place(@cruiser, ["A1", "A2", "A3"])
     assert_equal @cruiser, @cell_1.ship
-    
+
     assert_equal @cell_1.ship, @cell_2.ship
   end
 
@@ -129,5 +129,18 @@ class BoardTest < Minitest::Test
 
   def test_board_pads_left_side_of_strings
     assert_equal " test", @board.pad_left("test", 5)
+  end
+
+  def test_board_can_determine_if_all_ships_are_sunk
+    @board.place(@cruiser, ["A1", "A2", "A3"])
+    @board.place(@submarine, ["C1", "D1"])
+    assert_equal false, @board.all_ships_sunk?
+
+    @board.fire_upon("A1")
+    @board.fire_upon("A2")
+    @board.fire_upon("A3")
+    @board.fire_upon("C1")
+    @board.fire_upon("D1")
+    assert_equal true, @board.all_ships_sunk?
   end
 end
