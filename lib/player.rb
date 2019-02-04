@@ -57,6 +57,8 @@ class Player
     puts "Your shot on #{result[:coordinate]} was a #{result[:outcome]}"
     if result[:outcome] == "hit"
       check_for_winner
+    else
+      false
     end
   end
 
