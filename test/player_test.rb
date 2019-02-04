@@ -45,4 +45,15 @@ class PlayerTest < Minitest::Test
     assert_equal 1, actual_17.count?{|ship| ship.name == "Cruiser"}
     assert_equal 1, actual_17.count{|ship| ship.name == "Aircraft Carrier"}
   end
+
+  def test_player_can_generate_ship_presets
+    small_ships = @player.generate_ships
+    assert_equal 2, ships.length
+    assert_equal "Cruiser", ships.first.name
+
+    player = Player.new(Board.new(10, 10), Board.new(10, 10))
+    large_ships = player.generate_ships
+    assert_equal 5, large_ships.length
+    assert_equal "Aircraft Carrier", large_ships.first.name
+  end
 end
