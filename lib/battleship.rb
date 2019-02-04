@@ -11,18 +11,22 @@ class Battleship
     @game_over = false
   end
 
-  def start
+  def run
+
+  end
+
+  def display_main_menu
     # greeting, ask user if they want to play
-    p "Welcome to BATTLESHIP"
-    p "Enter p to play. Enter q to quit."
-    user_response = gets.chomp
-    if user_response == "q"
-      !@game_over
-    elsif user_response == "p"
-      setup
-    else
-      p "Invalid key."
-      start
+    puts "Welcome to BATTLESHIP"
+    puts "Enter p to play. Enter q to quit."
+    user_response = gets.chomp.downcase
+    while user_response != "p"
+      if user_response == "q"
+        abort
+      else
+        puts "Invalid key."
+      end
+      user_response = gets.chomp.downcase
     end
   end
 
@@ -93,9 +97,27 @@ class Battleship
       end
     end
 
+  def play_game
+    # set first player
+    until @game_over
+      # take turn with current_player
+      # toggle player
+    end
+  end
+
+  def take_turn(player)
+    # player takes a turn
+    # check for winner
+    # display results of shot
+  end
+
+  def toggle_player(player)
+    # return other player
+  end
+
   def end_game
     # puts game results
     # reset instance variables
-    start
+    run
   end
 end
