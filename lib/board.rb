@@ -172,4 +172,12 @@ class Board
     return_string = " " * (total_length_needed - string.length)
     return_string += string
   end
+
+  def all_ships_sunk?
+    @cells.none? do |key, cell|
+      if cell.empty? == false && cell.fired_upon? == false
+        true
+      end
+    end
+  end
 end
