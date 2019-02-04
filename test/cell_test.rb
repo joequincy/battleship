@@ -1,6 +1,7 @@
 require './test/test_helper'
 
 class CellTest < Minitest::Test
+  @@colorize = (ARGV.length > 0 && ARGV[0] == "--color") ? true : false
   def setup
     @cell = Cell.new("B4")
     @cruiser = Ship.new("Cruiser", 3)
@@ -46,6 +47,7 @@ class CellTest < Minitest::Test
   end
 
   def test_empty_cell_renders_correctly
+    skip if @@colorize
     assert_equal ".", @cell.render
 
     @cell.fire_upon
@@ -53,6 +55,7 @@ class CellTest < Minitest::Test
   end
 
   def test_cell_with_ship_renders_correctly
+    skip if @@colorize
     @cell.place_ship(@cruiser)
     assert_equal ".", @cell.render
 
