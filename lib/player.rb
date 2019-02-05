@@ -55,7 +55,8 @@ class Player
 
   def display_result(result)
     puts "Your shot on #{result[:coordinate]} was a #{result[:outcome]}"
-    if result[:outcome] == "hit"
+    if result[:outcome] == "hit" && result[:sunk]
+      puts "You sunk my #{result[:sunk]}!"
       check_for_winner
     else
       false

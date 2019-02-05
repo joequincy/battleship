@@ -24,6 +24,7 @@ class Computer
         coordinates = guess_consecutive_coordinates(ship)
         success = @own_board.place(ship, coordinates)
       end until success
+      # puts "Placed #{ship.name} at #{coordinates}."
     end
   end
 
@@ -36,9 +37,9 @@ class Computer
       next_coordinate = []
       if direction == 0
         next_coordinate << starting_coordinate.first
-        next_coordinate << starting_coordinate.last + step
+        next_coordinate << (starting_coordinate.last.to_i + step).to_s
       else
-        next_coordinate << (starting_coordinate.first.ord + step).char
+        next_coordinate << (starting_coordinate.first.ord + step).chr
         next_coordinate << starting_coordinate.last
       end
       output << next_coordinate.join("")
@@ -54,12 +55,16 @@ class Computer
     #
     # it returns `true` if the shot won the game
     # it returns `false` if the game must continue
-
+    coordinate = @untargeted_spaces.sample
+    result = @enemy_board.fire_upon(coordinate)
+    @untargeted_spaces.delete(coordinate)
+    display_result(result)
   end
 
   def display_result(result)
     puts "My shot on #{result[:coordinate]} was a #{result[:outcome]}"
-    if result[:outcome] == "hit"
+    if result[:outcome] == "hit" && result[:sunk]
+      puts "I sunk your #{result[:sunk]}!"
       check_for_winner
     else
       false

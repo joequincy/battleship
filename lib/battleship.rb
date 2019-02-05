@@ -1,12 +1,15 @@
 require './lib/board'
 require './lib/ship'
-require "./lib/player"
+require './lib/player'
+require './lib/computer'
 require 'pry'
 
 class Battleship
   def initialize
-    @computer = Computer.new(Board.new, Board.new)
-    @user = Player.new(Board.new, Board.new)
+    @computer_board = Board.new
+    @user_board = Board.new
+    @computer = Computer.new(@computer_board, @user_board)
+    @user = Player.new(@user_board, @computer_board)
     @game_over = false
     @current_player = @computer
   end
@@ -46,6 +49,12 @@ class Battleship
   def play_game
     until @game_over
       toggle_player
+      if @current_player == @user
+        puts "===Computer Board==="
+        puts @computer_board.render
+        puts "====Player Board===="
+        puts @user_board.render(true)
+      end
       @game_over = @current_player.take_shot
     end
   end
