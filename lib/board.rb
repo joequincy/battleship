@@ -104,9 +104,12 @@ class Board
   end
 
   def fire_upon(coordinate)
-    if validate_coordinate?(coordinate) && !@cells[coordinate].fired_upon?
-      @cells[coordinate].fire_upon
-      true
+    if validate_coordinate?(coordinate)
+      if !@cells[coordinate].fired_upon?
+        @cells[coordinate].fire_upon
+      else
+        {outcome: nil}
+      end
     else
       false
     end
@@ -174,10 +177,15 @@ class Board
   end
 
   def all_ships_sunk?
-    @cells.none? do |key, cell|
-      if cell.empty? == false && cell.fired_upon? == false
+    any_ships_floating = @cells.any? do |key, cell|
+      if cell.empty? == false && cell.ship.sunk? == false
+        # puts "#{cell.coordinate} is not empty, and its ship has not sunk."
         true
+      else
+        # puts "#{cell.coordinate} is either empty, or its ship has sunk."
+        false
       end
     end
+    any_ships_floating == false
   end
 end
