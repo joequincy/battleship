@@ -104,10 +104,21 @@ class BoardTest < Minitest::Test
     assert @submarine.sunk?
   end
 
-  def test_board_will_not_fire_on_cells_that_were_already_fired_upon
-    assert @board.fire_upon("A1")
+  def test_board_will_not_fire_on_empty_cells_that_were_already_fired_upon
+    unfired_cell = @board.fire_upon("A1")
+    assert_instance_of String, unfired_cell[:outcome]
 
-    refute @board.fire_upon("A1")
+    already_fired_cell = @board.fire_upon("A1")
+    assert_nil already_fired_cell[:outcome]
+  end
+
+  def test_board_will_not_fire_on_full_cells_that_were_already_fired_upon
+    @board.place(Ship.new("Cruiser", 3), ["A1", "A2", "A3"])
+    unfired_cell = @board.fire_upon("A1")
+    assert_instance_of String, unfired_cell[:outcome]
+
+    already_fired_cell = @board.fire_upon("A1")
+    assert_nil already_fired_cell[:outcome]
   end
 
   def test_board_renders_midgame_output
