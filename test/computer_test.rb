@@ -5,7 +5,7 @@ class ComputerTest < Minitest::Test
 
   def test_it_exists
     computer = Computer.new(Board.new, Board.new)
-    assert_equal Computer, computer
+    assert_instance_of Computer, computer
   end
 
   def test_that_computer_can_place_ships
@@ -36,7 +36,7 @@ class ComputerTest < Minitest::Test
     test_computer_ship = Ship.new("Submarine", 2)
     test_player_ship = Ship.new("Submarine", 2)
 
-    computer_board.place(test_computer_ships, ["A1", "A2"])
+    computer_board.place(test_computer_ship, ["A1", "A2"])
     player_board.place(test_player_ship, ["A1", "A2"])
 
     player_board.fire_upon("A1")
