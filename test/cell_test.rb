@@ -65,4 +65,34 @@ class CellTest < Minitest::Test
     @cruiser.hit
     assert_equal "X", @cell.render
   end
+
+  def test_fire_upon_outputs_correctly_for_miss
+    expected_miss = {
+                     coordinate: @cell.coordinate,
+                        outcome: "miss"
+                    }
+    assert_equal expected_miss, @cell.fire_upon
+  end
+
+  def test_fire_upon_outputs_correctly_for_hit_floating_ship
+    @cell.place_ship(@cruiser)
+    expected_hit = {
+                     coordinate: @cell.coordinate,
+                        outcome: "hit",
+                           sunk: nil
+                    }
+    assert_equal expected_hit, @cell.fire_upon
+  end
+
+  def test_fire_upon_outputs_correctly_for_sunk_ship
+    @cell.place_ship(@cruiser)
+    @cruiser.hit
+    @cruiser.hit
+    expected_sunk = {
+                     coordinate: @cell.coordinate,
+                        outcome: "hit",
+                           sunk: "Cruiser"
+                    }
+    assert_equal expected_sunk, @cell.fire_upon
+  end
 end
