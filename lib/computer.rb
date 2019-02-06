@@ -1,4 +1,6 @@
 require './lib/converters'
+require './lib/computer_board'
+require './lib/computer_cell'
 
 class Computer < Player
   def initialize(own_board, enemy_board, intelligence = 0)
@@ -14,44 +16,35 @@ class Computer < Player
   end
 
   def place_ships(ships)
-    # @ships = ships.map{|ship| ship.clone}
-    @ships = ships.clone
-    if @intelligence == 0
-      empty_coords = @own_board.cells.keys
-      while ships.length > 0
-        current_ship = ships.shift
-        potential_coords = limit_coords(empty_coords, current_ship.length)
-        exit_loop = false
-        placed_position = []
-        begin
-          starting_coord = potential_coords.sample
-          position = get_consecutive_coords(starting_coord, current_ship.length)
-          test_order = rand(2)
-          if test_order == 0
-            exit_loop = @own_board.place(current_ship, position[:horizontal])
-            if !exit_loop
-              exit_loop = @own_board.place(current_ship, position[:vertical])
-              placed_position = position[:vertical]
-            else
-              placed_position = position[:horizontal]
-            end
-          else
-            exit_loop = @own_board.place(current_ship, position[:vertical])
-            if !exit_loop
-              exit_loop = @own_board.place(current_ship, position[:horizontal])
-              placed_position = position[:horizontal]
-            else
-              placed_position = position[:vertical]
-            end
-          end
-          potential_coords.delete(starting_coord)
-        end until exit_loop[:pass]
-        placed_position.each do |coord|
-          empty_coords.delete(coord)
+    @ships = ships.map{|ship| ship.dup}
+    ships = @ships.dup
+    empty_coords = @own_board.cells.keys
+    while ships.length > 0
+      current_ship = ships.shift
+      tightness = @intelligence
+      potential_coords = limit_coords(empty_coords, current_ship.length, tightness)
+      validation = {pass: false}
+      position = []
+      begin
+        direction = rand(2)
+        starting_coord = ""
+        if direction == 0
+          starting_coord = potential_coords[:h].sample
+          potential_coords[:h].delete(starting_coord)
+        else
+          starting_coord = potential_coords[:v].sample
+          potential_coords[:v].delete(starting_coord)
         end
+        position = get_consecutive_coords(starting_coord, current_ship.length, direction)
+        validation = @own_board.place(current_ship, position)
+        if !validation[:pass] && potential_coords[:h].length == 0 && potential_coords[:v].length == 0
+          tightness -= 1
+          potential_coords = limit_coords(empty_coords, current_ship.length, tightness)
+        end
+      end until validation[:pass]
+      position.each do |coord|
+        empty_coords.delete(coord)
       end
-    else
-      # be smarter
     end
     return @ships, @own_board
   end
@@ -70,11 +63,8 @@ class Computer < Player
     end
   end
 
-  def get_consecutive_coords(starting_coord, length)
-    result_coords = {
-      horizontal: [],
-      vertical: []
-    }
+  def get_consecutive_coords(starting_coord, length, direction)
+    result_coords = []
     address = starting_coord.split_coordinate
     starting_row_num = address[:row].to_row_num
     rows = []
@@ -83,16 +73,19 @@ class Computer < Player
       rows << (starting_row_num + i - 1).to_row_letters
       columns << address[:column] + i - 1
     end
-    rows.each do |row|
-      result_coords[:vertical] << row + address[:column].to_s
-    end
-    columns.each do |column|
-      result_coords[:horizontal] << address[:row] + column.to_s
+    if direction == 1
+      rows.each do |row|
+        result_coords << row + address[:column].to_s
+      end
+    else
+      columns.each do |column|
+        result_coords << address[:row] + column.to_s
+      end
     end
     return result_coords
   end
 
-  def limit_coords(empty_coords, length)
+  def limit_coords(empty_coords, length, tightness)
     rows = []
     columns = []
     empty_coords.each do |coord|
@@ -104,14 +97,57 @@ class Computer < Player
     columns.uniq!
     max_row = rows.max.to_row_num
     max_col = columns.max
-    output = []
+    output = {h: [], v: []}
     rows.each_index do |row|
       columns.each_index do |column|
-        if row < max_row - length + 1 || column < max_col - length + 1
-          output << (rows[row] + columns[column].to_s)
+        if row <= max_row - length
+          coord = (rows[row] + columns[column].to_s)
+          if (tightness > 0 && open_ahead?(coord, :v, length, tightness)) || tightness == 0
+            output[:v] << coord
+          end
+        end
+        if column <= max_col - length
+          coord = (rows[row] + columns[column].to_s)
+          if (tightness > 0 && open_ahead?(coord, :h, length, tightness)) || tightness == 0
+            output[:h] << coord
+          end
         end
       end
     end
     return output
+  end
+
+  def open_ahead?(coord, direction, length, tightness)
+    address = coord.split_coordinate
+    (2..length).none? do |i|
+      i -= 1
+      new_coord = ""
+      if direction == :v
+        row = (address[:row].to_row_num + i).to_row_letters
+        new_coord = row + address[:column].to_s
+      elsif direction == :h
+        column = address[:column] + i
+        new_coord = address[:row] + column.to_s
+      end
+      if @own_board.validate_coordinate?(new_coord)
+        @own_board.cells[new_coord].shade > tightness
+      else
+        false
+      end
+    end
+  end
+
+  def pretty_print_coordinates(coordinates)
+    h = coordinates.group_by do |coordinate|
+      coordinate.match(/^[A-Z]+/)[0]
+    end
+    puts "["
+    h.each_value do |arr|
+      arr.each do |elm|
+        print elm + ", "
+      end
+      print "\n"
+    end
+    puts "]"
   end
 end

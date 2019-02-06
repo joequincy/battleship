@@ -40,6 +40,7 @@ class CellTest < Minitest::Test
   end
 
   def test_cell_affects_ship_when_fired_upon
+    @cell.colorize = false
     @cell.place_ship(@cruiser)
     @cell.fire_upon
     assert_equal 2, @cell.ship.health
@@ -53,6 +54,7 @@ class CellTest < Minitest::Test
   end
 
   def test_cell_with_ship_renders_correctly
+    @cell.colorize = false
     @cell.place_ship(@cruiser)
     assert_equal ".", @cell.render
 

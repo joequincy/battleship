@@ -13,9 +13,7 @@ class Cell
   end
 
   def colorize=(bool)
-    if bool == true || bool == false
-      @@colorize = bool
-    end
+    @@colorize = bool
   end
 
   def empty?
@@ -36,7 +34,7 @@ class Cell
   end
 
   def render(show_all_ships = false)
-    if @@colorize
+    if @@colorize == true
       if fired_upon? && @ship
         if @ship.sunk?
           "\e[90mX\e[0m"

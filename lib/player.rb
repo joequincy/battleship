@@ -8,9 +8,9 @@ class Player
     @ships = []
   end
 
-  def place_ships(ships)
-    # @ships = ships.map{|ship| ship.clone}
-    @ships = ships.clone
+  def place_ships(chosen_ships)
+    @ships = chosen_ships.map{|ship| ship.dup}
+    ships = @ships.dup
     while ships.length > 0
       print_ship_list(ships)
       puts @own_board.render(true)
@@ -178,6 +178,10 @@ class Player
         return ships
       end
     end
+  end
+
+  def all_ships_sunk?
+    @ships.all?{|ship| ship.sunk?}
   end
 end
 
