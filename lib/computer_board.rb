@@ -32,34 +32,12 @@ class ComputerBoard < Board
     coordinates.each_with_index do |coordinate, i|
       get_all_neighbors(coordinate).each do |cell|
         if i == 0 || i == coordinates.length - 1
-          cell.shade = 2
+          cell.shade = [cell.shade + 2, 3].min
         else
           cell.shade = [cell.shade + 1, 3].min
         end
       end
       @cells[coordinate].shade = 3
     end
-  end
-
-  def get_all_neighbors(coordinate)
-    neighbors = []
-    address = coordinate.split_coordinate
-    row = address[:row].to_row_num
-    column = address[:column]
-    rows = [row - 1, row + 1]
-    columns = [column - 1, column + 1]
-    neighbor_addresses = []
-    rows.each do |row|
-      neighbor_addresses << row.to_row_letters + address[:column].to_s
-    end
-    columns.each do |column|
-      neighbor_addresses << address[:row] + column.to_s
-    end
-    neighbor_addresses.each do |address|
-      if validate_coordinate?(address) && @cells[address].empty?
-        neighbors << @cells[address]
-      end
-    end
-    return neighbors
   end
 end

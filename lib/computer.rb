@@ -3,13 +3,17 @@ require './lib/computer_board'
 require './lib/computer_cell'
 
 class Computer < Player
+  attr_reader :own_board
   def initialize(own_board, enemy_board, intelligence = 0)
     super(own_board, enemy_board)
     @intelligence = intelligence
     @shots = {
-      hits: [],
-      misses: []
+          hits: [],
+        misses: [],
+      last_hit: nil,
+         count: 0
     }
+    @planned_shots = []
     @untargeted_spaces = enemy_board.cells.keys
     # each item in hit or miss array is an array containing
     # turn sequence (int), cell coordinate (str)
@@ -21,7 +25,7 @@ class Computer < Player
     empty_coords = @own_board.cells.keys
     while ships.length > 0
       current_ship = ships.shift
-      tightness = @intelligence
+      tightness = get_tightness
       potential_coords = limit_coords(empty_coords, current_ship.length, tightness)
       validation = {pass: false}
       position = []
@@ -45,22 +49,84 @@ class Computer < Player
       position.each do |coord|
         empty_coords.delete(coord)
       end
+      # ---Render output so we can see what's going on under the hood---
+      # system "clear && printf '\e[3J'"
+      # puts @own_board.render(true, true)
+      # sleep(0.5)
     end
     return @ships, @own_board
   end
 
   def take_shot
+    @shots[:count] += 1
+    target = nil
     # fire a shot according to intelligence level
     if @intelligence == 0
+      # Fire at random!
       target = @untargeted_spaces.sample
-      @untargeted_spaces.delete(target)
-      result = @enemy_board.fire_upon(target)
-      return {
-         msg: " shot on #{target} was a #{result[:msg]}.",
-        sunk: result[:sunk],
-        ship: result[:ship]
-      }
+    elsif @intelligence >= 1 # change to == when higher levels of intelligence are implemented
+      # track hits, and group shots until a ship has sunk
+      if @planned_shots.length > 0
+        target = @planned_shots.sample
+        @planned_shots.delete(target)
+      else
+        target = @untargeted_spaces.sample
+      end
+    elsif @intelligence == 2
+      # intelligently hunt across the board
+    elsif @intelligence == 3
+      # intelligently hunt, including knowledge of which ships are left.
     end
+    @untargeted_spaces.delete(target)
+    result = @enemy_board.fire_upon(target)
+    if result[:msg] == "hit"
+      vector = vector_to_last_hit(target)
+      @shots[:hits] << [@shots[:count], target]
+      if result[:sunk]
+        @planned_shots = []
+      elsif vector[:dist].abs == 1 && @intelligence > 1
+        # filter @planned_shots to straight line
+        neighbors = @enemy_board.get_all_neighbors(target)
+        neighbors.each do |cell|
+          if !cell.fired_upon?
+            @planned_shots << cell.coordinate
+          end
+        end
+        @planned_shots.delete_if do |coordinate|
+          planned_address = coordinate.split_coordinate
+          target_address = target.split_coordinate
+          if vector[:dir] == :h
+            if planned_address[:row] != target_address[:row]
+              true
+            else
+              false
+            end
+          elsif vector[:dir] == :v
+            if planned_address[:column] != target_address[:column]
+              true
+            else
+              false
+            end
+          end
+        end
+      else
+        neighbors = @enemy_board.get_all_neighbors(target)
+        neighbors.each do |cell|
+          if !cell.fired_upon?
+            @planned_shots << cell.coordinate
+          end
+        end
+      end
+      @shots[:last_hit] = [@shots[:count], target]
+    elsif result[:msg] == "miss"
+      @shots[:misses] << [@shots[:count], target]
+    end
+    puts "Planned shots after this: #{@planned_shots}"
+    return {
+       msg: " shot on #{target} was a #{result[:msg]}.",
+      sunk: result[:sunk],
+      ship: result[:ship]
+    }
   end
 
   def get_consecutive_coords(starting_coord, length, direction)
@@ -119,7 +185,7 @@ class Computer < Player
 
   def open_ahead?(coord, direction, length, tightness)
     address = coord.split_coordinate
-    (2..length).none? do |i|
+    (1..length).none? do |i|
       i -= 1
       new_coord = ""
       if direction == :v
@@ -129,10 +195,8 @@ class Computer < Player
         column = address[:column] + i
         new_coord = address[:row] + column.to_s
       end
-      if @own_board.validate_coordinate?(new_coord)
-        @own_board.cells[new_coord].shade > tightness
-      else
-        false
+      @own_board.get_all_neighbors(new_coord).any? do |cell|
+        cell.shade > 2 - tightness
       end
     end
   end
@@ -149,5 +213,35 @@ class Computer < Player
       print "\n"
     end
     puts "]"
+  end
+
+  def get_tightness
+    if @own_board.cells.keys.length >= 100
+      [@intelligence, 2].min
+    else
+      0
+    end
+  end
+
+  def vector_to_last_hit(target)
+    if @shots[:last_hit] == nil
+      return {dist:0}
+    else
+      last_hit = @shots[:last_hit][1].split_coordinate
+      this_hit = target.split_coordinate
+      delta_v = this_hit[:row].to_row_num - last_hit[:row].to_row_num
+      delta_h = this_hit[:column] - last_hit[:column]
+      if delta_h != 0 && delta_v != 0
+        return {dist:0}
+      elsif delta_h == 0
+        return {dist: delta_v,
+                 dir: :v}
+      elsif delta_v == 0
+        return {dist: delta_h,
+                 dir: :h}
+      else
+        return {dist: 0}
+      end
+    end
   end
 end

@@ -10,10 +10,11 @@ class Cell
     @coordinate = coordinate
     @ship = nil
     @fired_upon = false
+    @colorize = @@colorize
   end
 
   def colorize=(bool)
-    @@colorize = bool
+    @colorize = bool
   end
 
   def empty?
@@ -34,19 +35,19 @@ class Cell
   end
 
   def render(show_all_ships = false)
-    if @@colorize == true
+    if @colorize == true
       if fired_upon? && @ship
         if @ship.sunk?
-          "\e[90mX\e[0m"
+          "\e[38;5;88m\u2588\e[0m"
         else
-          "\e[31mH\e[0m"
+          "\e[38;5;196m\u2588\e[0m"
         end
       elsif fired_upon?
-        "\e[93mM\e[0m"
+        "\e[38;5;123m\u2588\e[0m"
       elsif @ship && show_all_ships
-        "S"
+        "\e[38;5;240m\u2588\e[0m"
       else
-        "\e[36m\u2592\e[0m"
+        "\e[38;5;27m\u2588\e[0m"
       end
     else
       if fired_upon? && @ship

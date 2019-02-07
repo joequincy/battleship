@@ -23,7 +23,7 @@ class Board
   end
 
   def validate_coordinate?(coordinate)
-    @cells.keys.include?(coordinate)
+    @cells.has_key?(coordinate)
   end
 
   def valid_placement?(ship, coordinates)
@@ -116,36 +116,38 @@ class Board
 
   def fire_upon(coordinate)
     # puts "Board.fire_upon(coordinate) received coordinate of class #{coordinate.class}."
-    cell = @cells[coordinate]
     is_valid = validate_coordinate?(coordinate)
-    fired_upon = cell.fired_upon?
-    if is_valid && !fired_upon
-      cell.fire_upon
-      if cell.empty?
-        return {
-           msg: "miss",
-          sunk: false,
-          ship: nil
-        }
+    if !is_valid
+      "That coordinate is not on the board."
+    else
+      cell = @cells[coordinate]
+      fired_upon = cell.fired_upon?
+      if fired_upon
+        "That coordinate has already been fired upon."
       else
-        if cell.ship.sunk?
+        cell.fire_upon
+        if cell.empty?
           return {
-             msg: "hit",
-            sunk: true,
-            ship: cell.ship.name
-          }
-        else
-          return {
-             msg: "hit",
+             msg: "miss",
             sunk: false,
             ship: nil
           }
+        else
+          if cell.ship.sunk?
+            return {
+               msg: "hit",
+              sunk: true,
+              ship: cell.ship.name
+            }
+          else
+            return {
+               msg: "hit",
+              sunk: false,
+              ship: nil
+            }
+          end
         end
       end
-    elsif fired_upon
-      "That coordinate has already been fired upon."
-    else
-      "That coordinate is not on the board."
     end
   end
 
@@ -202,7 +204,7 @@ class Board
         target_length = cell_render_output.length + largest_column_address.to_s.length - 1
         output += pad_left(cell_render_output, target_length) + " "
       end
-      output += "\n"
+      output += "\e[0m\n"
     end
     return output
   end
@@ -210,5 +212,27 @@ class Board
   def pad_left(string, total_length_needed)
     return_string = " " * (total_length_needed - string.length)
     return_string += string
+  end
+
+  def get_all_neighbors(coordinate)
+    neighbors = []
+    address = coordinate.split_coordinate
+    row = address[:row].to_row_num
+    column = address[:column]
+    rows = [row - 1, row + 1]
+    columns = [column - 1, column + 1]
+    neighbor_addresses = []
+    rows.each do |row|
+      neighbor_addresses << row.to_row_letters + address[:column].to_s
+    end
+    columns.each do |column|
+      neighbor_addresses << address[:row] + column.to_s
+    end
+    neighbor_addresses.each do |address|
+      if validate_coordinate?(address)
+        neighbors << @cells[address]
+      end
+    end
+    return neighbors
   end
 end

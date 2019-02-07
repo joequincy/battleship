@@ -7,7 +7,7 @@ class Battleship
     @boards = []
     @players = []
     @winner = nil
-    @computer_opponent = 0
+    @computer_opponent = true
   end
 
   def start
@@ -36,12 +36,6 @@ class Battleship
     user_response = gets.chomp.downcase
     if user_response == "y" || user_response == "yes"
       @computer_opponent = false
-    else
-      # prompt the player what difficulty they'd like
-      # puts "What difficulty would you like?"
-      # puts "0: Computer fires at random."
-      # puts "1: Computer is a little smarter about where to shoot."
-      # puts "2: Computer is much smarter about where to shoot."
     end
     clear_terminal
   end
@@ -107,7 +101,18 @@ class Battleship
   def create_players
     @players << Player.new(@boards[0], @boards[1])
     if @computer_opponent
-      @players << Computer.new(@boards[1], @boards[0], @computer_opponent)
+      # puts "What difficulty would you like?"
+      # puts "0: Cakewalk"
+      # puts "1: Easy"
+      # puts "2: Challenging"
+      # puts "3: Insane"
+      # difficulty = gets.chomp.to_i
+      # until difficulty <= 3 && difficulty >= 0
+      #   puts "Please select one of the difficulty settings shown."
+      #   difficulty = gets.chomp.to_i
+      # end
+      difficulty = 2
+      @players << Computer.new(@boards[1], @boards[0], difficulty)
     else
       @players << Player.new(@boards[1], @boards[0])
     end
