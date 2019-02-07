@@ -75,8 +75,10 @@ class Battleship
     end
 
     # Reset Instance Variables
-    @computer = Computer.new(Board.new, Board.new)
-    @user = Player.new(Board.new, Board.new)
+    @computer_board = Board.new
+    @user_board = Board.new
+    @computer = Computer.new(@computer_board, @user_board)
+    @user = Player.new(@user_board, @computer_board)
     @game_over = false
     @current_player = @computer
   end
